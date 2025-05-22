@@ -1,0 +1,52 @@
+const CheckEmail = () => {
+  return (
+    <div className='min-h-screen bg-white flex flex-col items-center'>
+      {/* Encabezado con logos */}
+      <div className='w-full flex justify-between items-center px-4 py-4 max-w-6xl'>
+        <img src='/uusmb.png' alt='Logo Izquierdo' className='h-20' />
+        <img src='/unamlogo.png' alt='Logo Derecho' className='h-20' />
+      </div>
+
+      {/* Tarjeta principal */}
+      <div className='flex-grow flex items-start justify-center w-full px-6 pt-20'>
+        <div className='bg-greyPrimary rounded-3xl shadow-lg p-8 w-full max-w-5xl flex flex-col items-center'>
+          {/* Título centrado sobre ambas secciones */}
+          <h1 className='text-2xl md:text-4xl font-bold text-center mb-8 w-full'>
+            RECUPERACIÓN DE CONTRASEÑA
+          </h1>
+
+          {/* Contenido dividido */}
+          <div className='flex flex-col md:flex-row w-full items-center'>
+            {/* Sección de formulario */}
+            <div className='md:w-1/2 w-full mb-6 md:mb-0 md:pr-8'>
+              <p className='text-lg mb-4 text-center md:text-left font-semibold'>
+                Verifica tu correo electrónico
+              </p>
+              <label
+                htmlFor='email'
+                className='block text-sm text-gray-600 mb-1'
+              >
+                Correo Electrónico
+              </label>
+              <input id='email' type='email' className='styled-input' />
+            </div>
+
+            {/* Imagen decorativa */}
+            <div className='md:w-1/2 w-full flex justify-center'>
+              <img
+                src='/email.png'
+                alt='Email'
+                className='h-48 md:h-64 object-contain'
+              />
+            </div>
+          </div>
+          <button className='w-3/5 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 rounded-xl shadow-md text-base mt-10'>
+            Continuar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default CheckEmail;
