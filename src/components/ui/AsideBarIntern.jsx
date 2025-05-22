@@ -53,7 +53,8 @@ const AsideBarIntern = ({ activePage = '', onToggle }) => {
             onToggle?.(false);
           }}
         >
-          <div className='flex flex-col flex-grow justify-between'>
+          <div className='flex flex-col flex-grow justify-between' onClick={() => 
+            setIsExpanded(!isExpanded)}>
             <div className='mt-32 flex flex-col items-center space-y-2'>
               <div
                 className={`flex items-center ${

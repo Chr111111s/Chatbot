@@ -4,13 +4,13 @@ import {
   LogOut,
   Settings,
   CircleUserRound,
-  Menu,
   SquarePen,
   BotMessageSquare,
-  History,
 } from 'lucide-react';
+import {logout} from '../../services/utils/authUtils.js'
 
 const AsideBar = ({ onToggle }) => {
+  
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(() => {
     const saved = localStorage.getItem('isExpanded');
@@ -30,7 +30,7 @@ const AsideBar = ({ onToggle }) => {
   };
 
   const handleLogout = () => {
-    // Implement logout logic here
+    logout();
     navigate('/');
   };
 
@@ -52,8 +52,11 @@ const AsideBar = ({ onToggle }) => {
             setIsExpanded(false);
             onToggle?.(false);
           }}
+          
         >
-          <div className='flex flex-col flex-grow justify-between'>
+          <div className='flex flex-col flex-grow justify-between' onClick={() => 
+            setIsExpanded(!isExpanded)}> 
+            
             <div className='mt-32 flex flex-col items-center space-y-2'>
               <div
                 className={`flex items-center ${

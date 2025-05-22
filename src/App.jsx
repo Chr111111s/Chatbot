@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useState } from 'react';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation
+} from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
+
 import Form from './components/templates/login/Form';
 import CheckEmail from './components/templates/login/CheckEmail';
 import ConfirmCode from './components/templates/login/ConfirmCode';
@@ -12,20 +19,50 @@ import HomeIntern from './components/templates/intern/HomeIntern';
 import ProfileIntern from './components/templates/intern/ProfileIntern';
 import HomeExtern from './components/templates/extern/HomeExtern';
 import ProfileExtern from './components/templates/extern/ProfileExtern';
-const App = () => {
-  const [user, setUser] = useState(null);
+import RedirectIfAuthenticated from './components/auth/RedirectIfAuthenticated';
+import RegisterForm from './components/templates/login/RegisterForm.jsx';
+
+const AnimatedRoutes = ({ user, setUser }) => {
+  const location = useLocation();
 
   return (
-    <Router>
-      <Routes>
-        {/* Rutas públicas */}
-        <Route path='/' element={<Form user={user} />} />
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route
+          path='/'
+          element={
+            <motion.div
+              initial={{ opacity: 0, x: -100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.4 }}
+            >
+              <RedirectIfAuthenticated>
+                <Form setUser={setUser} />
+              </RedirectIfAuthenticated>
+            </motion.div>
+          }
+        />
+        <Route
+          path='/register'
+          element={
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.4 }}
+            >
+              <RedirectIfAuthenticated>
+                <RegisterForm />
+              </RedirectIfAuthenticated>
+            </motion.div>
+          }
+        />
         <Route path='/checkEmail' element={<CheckEmail user={user} />} />
         <Route path='/confirmCode' element={<ConfirmCode user={user} />} />
         <Route path='/newPassword' element={<NewPassword user={user} />} />
 
-        {/* Rutas para ADMIN */}
-
+        {/* ADMIN */}
         <Route
           path='/home'
           element={
@@ -34,7 +71,6 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-
         <Route
           path='/users'
           element={
@@ -43,7 +79,6 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-
         <Route
           path='/profile'
           element={
@@ -53,7 +88,7 @@ const App = () => {
           }
         />
 
-        {/* Rutas para INTERNO */}
+        {/* INTERNO */}
         <Route
           path='/homeIntern'
           element={
@@ -62,7 +97,6 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-
         <Route
           path='/profileIntern'
           element={
@@ -72,7 +106,7 @@ const App = () => {
           }
         />
 
-        {/* Rutas para EXTERNO */}
+        {/* EXTERNO */}
         <Route
           path='/homeExtern'
           element={
@@ -81,7 +115,6 @@ const App = () => {
             </ProtectedRoute>
           }
         />
-
         <Route
           path='/profileExtern'
           element={
@@ -91,6 +124,16 @@ const App = () => {
           }
         />
       </Routes>
+    </AnimatePresence>
+  );
+};
+
+const App = () => {
+  const [user, setUser] = useState(null);
+
+  return (
+    <Router>
+      <AnimatedRoutes user={user} setUser={setUser} />
     </Router>
   );
 };
