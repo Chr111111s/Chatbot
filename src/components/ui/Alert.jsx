@@ -7,7 +7,7 @@ export default function Alert({
 }) {
   return (
     <div
-      className={`relative flex ${bgColor} p-2 text-center ${textColor} items-center justify-center mt-[1em] shadow shadow-purple-200 rounded-lg`}
+      className={`relative flex ${bgColor} p-2 text-center ${textColor} items-center justify-center mt-[1em] shadow rounded-lg`}
     >
       {/* Imagen posicionada arriba a la izquierda */}
       {!showSpinner && imageSrc && (

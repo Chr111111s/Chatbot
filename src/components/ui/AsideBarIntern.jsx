@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '../../services/utils/authUtils.js';
+
 import {
   LogOut,
   Settings,
@@ -30,10 +32,9 @@ const AsideBarIntern = ({ activePage = '', onToggle }) => {
   };
 
   const handleLogout = () => {
-    // Implement logout logic here
+    logout();
     navigate('/');
   };
-
 
   return (
     <>
@@ -53,8 +54,10 @@ const AsideBarIntern = ({ activePage = '', onToggle }) => {
             onToggle?.(false);
           }}
         >
-          <div className='flex flex-col flex-grow justify-between' onClick={() => 
-            setIsExpanded(!isExpanded)}>
+          <div
+            className='flex flex-col flex-grow justify-between'
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
             <div className='mt-32 flex flex-col items-center space-y-2'>
               <div
                 className={`flex items-center ${
@@ -104,7 +107,6 @@ const AsideBarIntern = ({ activePage = '', onToggle }) => {
         }`}
       >
         <div className='flex items-center space-x-2 p-2 rounded-lg '>
-          
           <SquarePen
             color='#CB842E'
             onClick={() => handleNavigation('/homeIntern')}

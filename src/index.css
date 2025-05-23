@@ -33,32 +33,7 @@
   will-change: transform;
 }
 
-/* Estado de registro */
-.register-mode .form-panel {
-  transform: translateX(100%);
-}
 
-.register-mode .image-panel {
-  transform: translateX(-100%);
-}
-
-/* Estado base */
-.default-mode .form-panel,
-.default-mode .image-panel {
-  transform: translateX(0%);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .form-panel, .image-panel {
-    width: 100% !important;
-    transform: none !important;
-  }
-
-  .image-panel {
-    margin-top: 20px;
-  }
-}
 
 /*Checkbox para tabla*/
 input[type="checkbox"].ios8-switch {

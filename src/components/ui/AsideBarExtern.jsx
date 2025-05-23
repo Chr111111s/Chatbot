@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '../../services/utils/authUtils.js';
+
 import {
   LogOut,
   CircleUserRound,
@@ -7,7 +9,7 @@ import {
   BotMessageSquare,
 } from 'lucide-react';
 
-const AsideBarExtern = ({onToggle }) => {
+const AsideBarExtern = ({ onToggle }) => {
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(() => {
     const saved = localStorage.getItem('isExpanded');
@@ -27,10 +29,9 @@ const AsideBarExtern = ({onToggle }) => {
   };
 
   const handleLogout = () => {
-    // Implement logout logic here
+    logout();
     navigate('/');
   };
-
 
   return (
     <>
@@ -50,8 +51,10 @@ const AsideBarExtern = ({onToggle }) => {
             onToggle?.(false);
           }}
         >
-          <div className='flex flex-col flex-grow justify-between' onClick={() => 
-            setIsExpanded(!isExpanded)}>
+          <div
+            className='flex flex-col flex-grow justify-between'
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
             <div className='mt-32 flex flex-col items-center space-y-2'>
               <div
                 className={`flex items-center ${
@@ -101,7 +104,6 @@ const AsideBarExtern = ({onToggle }) => {
         }`}
       >
         <div className='flex items-center space-x-2 p-2 rounded-lg '>
-          
           <SquarePen
             color='#CB842E'
             onClick={() => handleNavigation('/homeExtern')}

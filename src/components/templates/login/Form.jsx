@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../../../../constants.js';
 import { BotMessageSquare } from 'lucide-react';
 import Alert from '../../ui/Alert.jsx';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Form = ({ setUser }) => {
   const navigate = useNavigate();
@@ -14,94 +16,113 @@ const Form = ({ setUser }) => {
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [success, setSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    setIsSubmitting(true);
     if (email === '' || password === '') {
       setError(true);
       setErrorMessage('Por favor, completa todos los campos');
       setSuccess(false);
+      setIsSubmitting(false);
       return;
     }
 
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
-        },
-        credentials: 'include',
-        mode: 'cors',
-        body: JSON.stringify({ email, password }),
-      });
+      const promise = toast.promise(
+        async () => {
+          const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            credentials: 'include',
+            mode: 'cors',
+            body: JSON.stringify({ email, password }),
+          });
 
-      if (!response.ok) {
-        const errorData = await response.text();
-        console.error('Login error response:', errorData);
-        setError(true);
-        setErrorMessage(
-          'Usuario o contraseña incorrectos. Por favor, verifica tus datos e inténtalo de nuevo. Si sigues teniendo problemas, contacta a soporte.'
-        );
-        setSuccess(false);
-        return;
-      }
-
-      const token = await response.text();
-      if (!token) {
-        setError(true);
-        setErrorMessage('Token no recibido del servidor');
-        setSuccess(false);
-        return;
-      }
-
-      const formattedToken = token.trim();
-      const tokenWithBearer = formattedToken.startsWith('Bearer ')
-        ? formattedToken
-        : `Bearer ${formattedToken}`;
-
-      localStorage.setItem('token', tokenWithBearer);
-
-      const tokenPayload = decodeToken(tokenWithBearer);
-      if (tokenPayload) {
-        // Verificar si el usuario está activo
-        if (tokenPayload.status === false) {
-          // Eliminar el token ya que el usuario está inactivo
-          localStorage.removeItem('token');
-          setError(true);
-          setErrorMessage(
-            'Tu cuenta está inactiva. Contacta al administrador.'
-          );
-          setSuccess(false);
-          return;
-        }
-
-        setUser([tokenPayload.email, tokenPayload.role]);
-        setError(false);
-        setSuccess(true);
-
-        setTimeout(() => {
-          switch (tokenPayload.role) {
-            case 'ADMIN':
-              navigate('/home');
-              break;
-            case 'INERNO':
-              navigate('/homeIntern');
-              break;
-            case 'EXTERNO':
-              navigate('/homeExtern');
-              break;
-            default:
-              navigate('/home');
+          if (!response.ok) {
+            const errorData = await response.text();
+            console.error('Login error response:', errorData);
+            setError(true);
+            setErrorMessage(
+              'Usuario o contraseña incorrectos. Por favor, verifica tus datos e inténtalo de nuevo. Si sigues teniendo problemas, contacta a soporte.'
+            );
+            setSuccess(false);
+            return;
           }
-        }, 2000);
-      }
+
+          const token = await response.text();
+          if (!token) {
+            setError(true);
+            setErrorMessage('Token no recibido del servidor');
+            setSuccess(false);
+            setIsSubmitting(false);
+
+            return;
+          }
+
+          const formattedToken = token.trim();
+          const tokenWithBearer = formattedToken.startsWith('Bearer ')
+            ? formattedToken
+            : `Bearer ${formattedToken}`;
+
+          localStorage.setItem('token', tokenWithBearer);
+
+          const tokenPayload = decodeToken(tokenWithBearer);
+          if (tokenPayload) {
+            // Verificar si el usuario está activo
+            if (tokenPayload.status === false) {
+              // Eliminar el token ya que el usuario está inactivo
+              localStorage.removeItem('token');
+              setError(true);
+              setErrorMessage(
+                'Tu cuenta está inactiva. Contacta al administrador.'
+              );
+              setSuccess(false);
+              setIsSubmitting(false);
+
+              return;
+            }
+
+            setUser([tokenPayload.email, tokenPayload.role]);
+            setError(false);
+            setSuccess(true);
+            setIsSubmitting(false);
+
+            setTimeout(() => {
+              switch (tokenPayload.role) {
+                case 'ADMIN':
+                  navigate('/home');
+                  break;
+                case 'INERNO':
+                  navigate('/homeIntern');
+                  break;
+                case 'EXTERNO':
+                  navigate('/homeExtern');
+                  break;
+                default:
+                  navigate('/home');
+              }
+            }, 2000);
+          }
+        },
+        {
+          position: 'bottom-right',
+          pending: 'Enviando datos...',
+          success: 'Registro completado con éxito',
+          error: 'Error en el registro',
+        }
+      );
+      await promise;
     } catch (error) {
       console.error('Error details:', error);
       setError(true);
-      setErrorMessage(error.message || 'Error de conexión con el servidor');
+      setErrorMessage('Error de conexión con el servidor, contacta a soporte.');
       setSuccess(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -134,7 +155,7 @@ const Form = ({ setUser }) => {
 
   const handleChangeRegister = () => {
     navigate('/register');
-  }
+  };
 
   return (
     <div className={`flex h-screen flex-col md:flex-row`}>
@@ -224,7 +245,11 @@ const Form = ({ setUser }) => {
               </button>
             </div>
             ¿Aún no tienes una cuenta?{' '}
-            <button type='button' className='text-orange-600' onClick={handleChangeRegister}>
+            <button
+              type='button'
+              className='text-orange-600'
+              onClick={handleChangeRegister}
+            >
               Registrarme
             </button>
           </div>
@@ -232,8 +257,9 @@ const Form = ({ setUser }) => {
           <button
             type='submit'
             className='bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-2 rounded col-span-2'
+            disabled={isSubmitting}
           >
-            Continuar
+            {isSubmitting ? 'Iniciando sesion' : 'Iniciar Sesión'}
           </button>
         </form>
       </div>
@@ -246,6 +272,18 @@ const Form = ({ setUser }) => {
           className='max-w-xs md:max-w-full'
         />
       </div>
+      <ToastContainer
+        position='bottom-center'
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme='light'
+      />
     </div>
   );
 };

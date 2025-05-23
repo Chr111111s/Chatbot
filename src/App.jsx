@@ -3,7 +3,7 @@ import {
   BrowserRouter as Router,
   Routes,
   Route,
-  useLocation
+  useLocation,
 } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -26,7 +26,7 @@ const AnimatedRoutes = ({ user, setUser }) => {
   const location = useLocation();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode='wait'>
       <Routes location={location} key={location.pathname}>
         <Route
           path='/'
@@ -58,7 +58,19 @@ const AnimatedRoutes = ({ user, setUser }) => {
             </motion.div>
           }
         />
-        <Route path='/checkEmail' element={<CheckEmail user={user} />} />
+        <Route
+          path='/checkEmail'
+          element={
+            <motion.div
+              initial={{ opacity: 0, x: 100 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 100 }}
+              transition={{ duration: 0.4 }}
+            >
+              <CheckEmail user={user} />
+            </motion.div>
+          }
+        />
         <Route path='/confirmCode' element={<ConfirmCode user={user} />} />
         <Route path='/newPassword' element={<NewPassword user={user} />} />
 
