@@ -26,14 +26,6 @@
   color: #ccc;
 }
 
-/* Animación de paneles */
-.form-panel,
-.image-panel {
-  transition: transform 0.8s cubic-bezier(0.77, 0, 0.175, 1);
-  will-change: transform;
-}
-
-
 
 /*Checkbox para tabla*/
 input[type="checkbox"].ios8-switch {
@@ -42,7 +34,7 @@ input[type="checkbox"].ios8-switch {
     width: 40px; /* x*5 */
     height: 24px; /* x*3 */
     border-radius: 16px; /* x*2 */
-    background: #ff0000;
+    background: #d1d5db; /* gris */
     border: 1px solid #d9d9d9;
     -webkit-transition: all 0.3s;
     transition: all 0.3s;
@@ -72,9 +64,10 @@ input[type="checkbox"].ios8-switch:hover:before {
 }
 
 input[type="checkbox"].ios8-switch:checked {
-    background: #55D069;
+    background: #cb842e; /* brandy-punch-500 */
 }
 
 input[type="checkbox"].ios8-switch:checked:before {
     margin-left: 16px;
 }
+

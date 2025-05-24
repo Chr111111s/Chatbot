@@ -1,7 +1,17 @@
 import { useState, useEffect } from 'react';
 import AsideBar from '../../ui/AsideBar';
 import EditProfileModal from './EditProfileModal';
-import { UserIcon, MailIcon, PhoneIcon, PencilIcon, ShieldUser  } from 'lucide-react';
+import {
+  UserIcon,
+  MailIcon,
+  PhoneIcon,
+  PencilIcon,
+  ShieldUser,
+} from 'lucide-react';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { getUserById } from '../../../services/users/userServices';
+import { decodeAndDisplayToken } from '../../../services/auth/authService.js';
 
 const Profile = () => {
   const [isAsideExpanded, setIsAsideExpanded] = useState(() => {
@@ -9,28 +19,77 @@ const Profile = () => {
     return saved ? JSON.parse(saved) : false;
   });
 
-  const [profileData, setProfileData] = useState(null);
+  const [profileData, setProfileData] = useState({
+    id: '',
+    fullName: '',
+    firstLastName: '',
+    secondLastName: '',
+    phone: '',
+    email: '',
+    role: '',
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleAsideToggle = (expanded) => setIsAsideExpanded(expanded);
 
   useEffect(() => {
-    const getData = async () => {
+    const loadUserData = async () => {
+      let loaded = false;
+
       try {
-        // Simulación de datos
-        const data = {
-          nombreCompleto: 'Aviles Sotelo Christian Jesus',
-          correo: 'avilessotelochristian@gmail.com',
-          telefono: '77762366236',
-          rol: 'Administrador',
-        };
-        setProfileData(data);
-      } catch (error) {
-        console.error('Error al obtener perfil:', error);
+        const tokenData = decodeAndDisplayToken();
+
+        if (tokenData && tokenData.id) {
+          // Use the ID from the token without overwriting localStorage
+          const userId = tokenData.id;
+          console.log('Fetching user data with ID:', userId);
+
+          const response = await getUserById(userId);
+
+          if (response?.result) {
+            const profileData = {
+              id: response.result.id,
+              fullName: response.result.fullName,
+              firstLastName: response.result.firstLastName,
+              secondLastName: response.result.secondLastName,
+              phone: response.result.phone,
+              email: response.result.email,
+              role: response.result.role,
+            };
+            setProfileData(profileData);
+            loaded = true;
+          }
+        }
+      } catch (err) {
+        // Silent error in production
+      }
+
+      if (!loaded) {
+        try {
+          const savedUserId = localStorage.getItem('userId');
+          if (savedUserId) {
+            const response = await getUserById(savedUserId);
+
+            if (response?.result) {
+              const profileData = {
+                id: response.result.id,
+                fullName: response.result.fullName,
+                firstLastName: response.result.firstLastName,
+                secondLastName: response.result.secondLastName,
+                email: response.result.email,
+                role: response.result.role,
+              };
+              setProfileData(profileData);
+              loaded = true;
+            }
+          }
+        } catch (err) {
+          // Silent error in production
+        }
       }
     };
 
-    getData();
+    loadUserData();
   }, []);
 
   if (!profileData) {
@@ -61,7 +120,7 @@ const Profile = () => {
                 <div>
                   <p className='text-sm text-gray-500'>Nombre completo</p>
                   <p className='text-lg font-semibold text-gray-800'>
-                    {profileData.nombreCompleto}
+                    {profileData.fullName} {profileData.firstLastName} {profileData.secondLastName}
                   </p>
                 </div>
               </div>
@@ -72,7 +131,7 @@ const Profile = () => {
                 <div>
                   <p className='text-sm text-gray-500'>Correo electrónico</p>
                   <p className='text-lg font-semibold text-gray-800'>
-                    {profileData.correo}
+                    {profileData.email}
                   </p>
                 </div>
               </div>
@@ -83,18 +142,18 @@ const Profile = () => {
                 <div>
                   <p className='text-sm text-gray-500'>Teléfono</p>
                   <p className='text-lg font-semibold text-gray-800'>
-                    {profileData.telefono}
+                    {profileData.phone}
                   </p>
                 </div>
               </div>
 
-               {/* Rol */}
+              {/* Rol */}
               <div className='flex items-start gap-4'>
-                <ShieldUser  className='text-primary mt-1' size={24} />
+                <ShieldUser className='text-primary mt-1' size={24} />
                 <div>
                   <p className='text-sm text-gray-500'>Rol</p>
                   <p className='text-lg font-semibold text-gray-800'>
-                    {profileData.rol}
+                    {profileData.role}
                   </p>
                 </div>
               </div>
@@ -127,6 +186,18 @@ const Profile = () => {
           />
         )}
       </main>
+      <ToastContainer
+        position='bottom-center'
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme='light'
+      />
     </div>
   );
 };

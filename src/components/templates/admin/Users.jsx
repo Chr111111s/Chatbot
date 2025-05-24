@@ -1,43 +1,134 @@
 import { useState, useEffect } from 'react';
 import AsideBar from '../../ui/AsideBar';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Swal from 'sweetalert2';
+import {
+  getAllUsers,
+  changeUserStatus,
+} from '../../../services/users/userServices';
+import AddUserModal from './AddUserModal';
+import EditUserProfile from './EditUserProfie';
+import { UserPen, Shield, CircleUserRound } from 'lucide-react';
 
 const USERS_PER_PAGE = 8;
 
-const mockUsers = Array.from({ length: 40 }, (_, i) => ({
-  id: i,
-  nombre: 'Christian',
-  apellidos: 'Aviles Sotelo',
-  correo: `christian${i}@ibt.unam.mx`,
-  telefono: '7775201281',
-  rol: i === 0 ? 'Administrador' : i % 3 === 0 ? 'Externo' : 'Interno',
-  estado: i % 2 === 0,
-}));
-
-const Users = () => {
-  const [isAsideExpanded, setIsAsideExpanded] = useState(() => {
-    const saved = localStorage.getItem('isExpanded');
-    return saved ? JSON.parse(saved) : false;
-  });
+const Users = ({ user }) => {
+  const [isAsideExpanded, setIsAsideExpanded] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [search, setSearch] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [filteredUsers, setFilteredUsers] = useState(mockUsers);
+  const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const response = await getAllUsers();
+      if (response || response.result || Array.isArray(response.result)) {
+        setUsers(response.result);
+        setFilteredUsers(response.result);
+        setError(null);
+      } else {
+        setUsers([]);
+        setFilteredUsers([]);
+        setError(
+          'No se pudieron cargar los datos de los usuarios. Formato de datos inesperados'
+        );
+      }
+      setLoading(false);
+    } catch (error) {
+      console.error('Error en el fetchihng', error);
+      setError('Errro al cargar los usuarios');
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const changeStatus = async (userId, currentStatus) => {
+    const result = await Swal.fire({
+      icon: 'question',
+      title: '¿Estás seguro?',
+      text: '¿Deseas editar el status del usuario?',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, editar',
+      confirmButtonColor: '#12c222',
+      cancelButtonColor: '#d33',
+      cancelButtonText: 'Cancelar',
+    });
+
+    // Si el usuario confirma, proceder con la actualización
+    if (result.isConfirmed) {
+      setLoading(true);
+      const loadingToastId = toast.info('Cargando...', { autoClose: false });
+
+      try {
+        const response = await changeUserStatus(userId, !currentStatus);
+
+        if (response) {
+          toast.update(loadingToastId, {
+            render: 'Estado actualizado con éxito',
+            type: 'success',
+            autoClose: 5000,
+          });
+          // Mostrar SweetAlert de éxito
+          Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: 'Has sido editado con exito',
+            showConfirmButton: false,
+            timer: 1500,
+          });
+          fetchUsers(); // Actualizar la lista de usuarios
+        }
+      } catch (error) {
+        console.error('Error al actualizar el estado perfil:', error);
+        toast.update(loadingToastId, {
+          render: 'Error al actualizar el estado del perfil',
+          type: 'error',
+          autoClose: 5000,
+        });
+        // Mostrar SweetAlert de error
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al actualizar el estado del perfil',
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
   useEffect(() => {
-    const results = mockUsers.filter((user) =>
-      `${user.nombre} ${user.apellidos} ${user.correo}`
-        .toLowerCase()
-        .includes(search.toLowerCase())
-    );
-    setFilteredUsers(results);
-    setCurrentPage(1);
-  }, [search]);
+    if (Array.isArray(users)) {
+      const results = users.filter((user) =>
+        `${user.fullName} ${user.firstLastName} ${user.secondLastName} ${user.email}`
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      );
+      setFilteredUsers(results);
+      setCurrentPage(1);
+    }
+  }, [search, users]);
 
   const totalPages = Math.ceil(filteredUsers.length / USERS_PER_PAGE);
-  const paginatedUsers = filteredUsers.slice(
-    (currentPage - 1) * USERS_PER_PAGE,
-    currentPage * USERS_PER_PAGE
-  );
+  const paginatedUsers = Array.isArray(filteredUsers)
+    ? filteredUsers.slice(
+        (currentPage - 1) * USERS_PER_PAGE,
+        currentPage * USERS_PER_PAGE
+      )
+    : [];
+
+  if (loading) return <div>Cargando...</div>;
+  if (error) return <div>Error: {error}</div>;
 
   const handleAsideToggle = (expanded) => setIsAsideExpanded(expanded);
 
@@ -69,7 +160,10 @@ const Users = () => {
                 <option>Inactivos</option>
               </select>
             </div>
-            <button className='bg-primary text-white px-4 py-2 rounded-md shadow-md w-full sm:w-auto'>
+            <button
+              className='bg-gradient-to-r from-brandy-punch-500 to-brandy-punch-600 hover:from-brandy-punch-600 hover:to-brandy-punch-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center'
+              onClick={() => setIsAddUserModalOpen(true)}
+            >
               + Agregar Usuario
             </button>
           </div>
@@ -79,9 +173,7 @@ const Users = () => {
             <table className='min-w-full text-sm text-left'>
               <thead className='bg-gray-100 text-gray-600'>
                 <tr>
-                  <th className='p-3'>
-                    <input type='checkbox' />
-                  </th>
+                  <th className='p-3'></th>
                   <th className='p-3'>Nombre</th>
                   <th className='p-3'>Apellidos</th>
                   <th className='p-3'>Correo</th>
@@ -94,36 +186,51 @@ const Users = () => {
               <tbody>
                 {paginatedUsers.map((user) => (
                   <tr key={user.id} className='border-t hover:bg-gray-50'>
+                    <td className='p-3'></td>
+                    <td className='p-3'>{user.fullName}</td>
+                    <td className='p-3'>{`${user.firstLastName} ${user.secondLastName}`}</td>
+                    <td className='p-3'>{user.email}</td>
+                    <td className='p-3'>{user.phone}</td>
                     <td className='p-3'>
-                      <input type='checkbox' />
-                    </td>
-                    <td className='p-3'>{user.nombre}</td>
-                    <td className='p-3'>{user.apellidos}</td>
-                    <td className='p-3'>{user.correo}</td>
-                    <td className='p-3'>{user.telefono}</td>
-                    <td className='p-3'>
-                      <span
-                        className={`px-2 py-1 rounded-full text-white text-xs ${
-                          user.rol === 'Administrador'
-                            ? 'bg-amber-500'
-                            : user.rol === 'Interno'
-                            ? 'bg-blue-500'
-                            : 'bg-purple-500'
-                        }`}
-                      >
-                        {user.rol}
-                      </span>
+                      <div className=''>
+                        <span
+                          className={`px-2 py-1 rounded-full text-white text-xs flex items-center ${
+                            user.role === 'ADMIN'
+                              ? 'bg-brandy-punch-700'
+                              : user.role === 'INTERNO'
+                              ? 'bg-brandy-punch-600'
+                              : 'bg-brandy-punch-300'
+                          }`}
+                        >
+                          {user.role === 'ADMIN' && <Shield className='mr-1' />}
+                          {user.role === 'INTERNO' && (
+                            <CircleUserRound className='mr-1' />
+                          )}
+                          {user.role === 'EXTERNO' && (
+                            <CircleUserRound className='mr-1' />
+                          )}
+                          {user.role}
+                        </span>
+                      </div>
                     </td>
                     <td className='p-3'>
                       <input
                         type='checkbox'
-                        className=' ios8-switch'
-                        checked={user.estado}
+                        className='ios8-switch'
+                        checked={user.status}
+                        onChange={() => changeStatus(user.id, user.status)}
                       />
                     </td>
-                    <td className='p-3'>
-                      <button className='bg-green-600 text-white px-3 py-1 rounded-md text-xs'>
-                        Editar
+
+                    <td className='p-2'>
+                      <button
+                        className='bg-gradient-to-r from-brandy-punch-500 to-brandy-punch-600 hover:from-brandy-punch-600 hover:to-brandy-punch-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center'
+                        onClick={() => {
+                          setProfileData(user);
+                          setIsEditProfileModalOpen(true);
+                        }}
+                      >
+                        <UserPen className='mr-2' />
                       </button>
                     </td>
                   </tr>
@@ -167,6 +274,20 @@ const Users = () => {
           </div>
         </div>
       </main>
+      {isAddUserModalOpen && (
+        <AddUserModal onClose={() => setIsAddUserModalOpen(false)} />
+      )}
+      {isEditProfileModalOpen && (
+        <EditUserProfile
+          profileData={profileData}
+          onClose={() => setIsEditProfileModalOpen(false)}
+          onSave={(updatedData) => {
+            setProfileData(updatedData);
+            setIsEditProfileModalOpen(false);
+            fetchUsers();
+          }}
+        />
+      )}
     </div>
   );
 };

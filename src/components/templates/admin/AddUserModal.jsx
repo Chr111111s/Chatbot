@@ -1,122 +1,69 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import Swal from 'sweetalert2';
-import 'react-toastify/dist/ReactToastify.css';
-import { updateUser } from '../../../services/users/userServices';
+import { creaeteUser } from '../../../services/users/userServices';
 import {
   validateEmail,
   validatePhone,
+  validatePassword,
   validateFullName,
   validateLastName,
   validateSecondLastName,
 } from '../../../services/utils/validations.js';
-import { User, Mail, Phone, X, Save } from 'lucide-react';
+import { X, User, Mail, Phone, Save } from 'lucide-react'; 
 
-const EditProfileModal = ({ profileData, onClose, onSave }) => {
+const AddUserModal = ({ onClose }) => {
   const [form, setForm] = useState({
-    id: profileData.id,
-    fullName: profileData.fullName,
-    firstLastName: profileData.firstLastName,
-    secondLastName: profileData.secondLastName,
-    email: profileData.email,
-    phone: profileData.phone,
-    role: profileData.role,
+    fullName: '',
+    firstLastName: '',
+    secondLastName: '',
+    email: '',
+    phone: '',
+    password: '',
   });
-  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const validateForm = () => {
-    if (!validateFullName(form.fullName)) {
-      toast.error('Nombre inválido. Solo se permiten letras y espacios.');
-      return false;
-    }
-    if (!validateLastName(form.firstLastName)) {
-      toast.error(
-        'Apellido Paterno inválido. Solo se permiten letras y espacios.'
-      );
-      return false;
-    }
-    if (!validateSecondLastName(form.secondLastName)) {
-      toast.error(
-        'Apellido Materno inválido. Solo se permiten letras y espacios.'
-      );
-      return false;
-    }
-    if (!validateEmail(form.email)) {
-      toast.error('Correo electrónico inválido.');
-      return false;
-    }
-    if (!validatePhone(form.phone)) {
-      toast.error('Teléfono inválido. Debe tener 10 dígitos.');
-      return false;
-    }
-    return true;
+    const { name, value } = e.target;
+    setForm({
+      ...form,
+      [name]: value,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) {
+
+    // Validaciones
+    if (!validateFullName(form.fullName)) {
+      toast.error('Nombre completo no es válido');
+      return;
+    }
+    if (!validateLastName(form.firstLastName)) {
+      toast.error('Primer apellido no es válido');
+      return;
+    }
+    if (!validateSecondLastName(form.secondLastName)) {
+      toast.error('Segundo apellido no es válido');
+      return;
+    }
+    if (!validateEmail(form.email)) {
+      toast.error('Email no es válido');
+      return;
+    }
+    if (!validatePhone(form.phone)) {
+      toast.error('Teléfono no es válido');
+      return;
+    }
+    if (!validatePassword(form.password)) {
+      toast.error('Contraseña no es válida');
       return;
     }
 
-    // Mostrar SweetAlert de confirmación
-    const result = await Swal.fire({
-      icon: 'question',
-      title: '¿Estás seguro?',
-      text: '¿Deseas editar el perfil?',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, editar',
-      confirmButtonColor: '#12c222',
-      cancelButtonColor: '#d33',
-      cancelButtonText: 'Cancelar',
-    });
-
-    // Si el usuario confirma, proceder con la actualización
-    if (result.isConfirmed) {
-      setIsLoading(true);
-      const loadingToastId = toast.info('Cargando...', { autoClose: false });
-
-      try {
-        const response = await updateUser({
-          ...form,
-        });
-
-        if (response) {
-          onSave(form);
-          toast.update(loadingToastId, {
-            render: 'Perfil actualizado con éxito',
-            type: 'success',
-            autoClose: 5000,
-          });
-          // Mostrar SweetAlert de éxito
-          Swal.fire({
-            position: 'top-end',
-            icon: 'success',
-            title: 'Has sido editado con exito',
-            showConfirmButton: false,
-            timer: 1500,
-          });
-          onClose();
-        }
-      } catch (error) {
-        console.error('Error al actualizar el perfil:', error);
-        toast.update(loadingToastId, {
-          render: 'Error al actualizar el perfil',
-          type: 'error',
-          autoClose: 5000,
-        });
-        // Mostrar SweetAlert de error
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error al actualizar el perfil',
-        });
-      } finally {
-        setIsLoading(false);
-      }
+    try {
+      await createUser(form);
+      toast.success('Usuario creado con éxito');
+      onClose();
+    } catch (error) {
+      toast.error('Error al crear el usuario');
     }
   };
 
@@ -135,7 +82,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
         </div>
         <form onSubmit={handleSubmit} className='space-y-6'>
           <div>
-            <label className=' text-sm font-medium text-gray-700 mb-1 flex items-center'>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
               <User size={16} className='mr-2' />
               Nombre
             </label>
@@ -147,7 +94,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className=' text-sm font-medium text-gray-700 mb-1 flex items-center'>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
               <User size={16} className='mr-2' />
               Apellido Paterno
             </label>
@@ -159,7 +106,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className=' text-sm font-medium text-gray-700 mb-1 flex items-center'>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
               <User size={16} className='mr-2' />
               Apellido Materno
             </label>
@@ -171,7 +118,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className=' text-sm font-medium text-gray-700 mb-1 flex items-center'>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
               <Mail size={16} className='mr-2' />
               Correo electrónico
             </label>
@@ -183,13 +130,25 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className=' text-sm font-medium text-gray-700 mb-1 flex items-center'>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
               <Phone size={16} className='mr-2' />
               Teléfono
             </label>
             <input
               name='phone'
               value={form.phone}
+              onChange={handleChange}
+              className='mt-1 p-3 w-full border border-gray-300 rounded-md focus:ring focus:ring-green-200 focus:border-green-500'
+            />
+          </div>
+          <div>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
+              Contraseña
+            </label>
+            <input
+              type="password"
+              name='password'
+              value={form.password}
               onChange={handleChange}
               className='mt-1 p-3 w-full border border-gray-300 rounded-md focus:ring focus:ring-green-200 focus:border-green-500'
             />
@@ -205,11 +164,10 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
             </button>
             <button
               type='submit'
-              disabled={isLoading}
               className='bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition duration-200 flex items-center'
             >
               <Save size={16} className='mr-2' />
-              {isLoading ? 'Guardando...' : 'Guardar'}
+              Guardar
             </button>
           </div>
         </form>
@@ -218,4 +176,4 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
   );
 };
 
-export default EditProfileModal;
+export default AddUserModal;

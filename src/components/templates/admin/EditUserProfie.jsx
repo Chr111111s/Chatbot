@@ -10,9 +10,8 @@ import {
   validateLastName,
   validateSecondLastName,
 } from '../../../services/utils/validations.js';
-import { User, Mail, Phone, X, Save } from 'lucide-react';
-
-const EditProfileModal = ({ profileData, onClose, onSave }) => {
+import { X, User, Mail, Phone, Save, Shield, UserCheck, Users } from 'lucide-react';
+const EditUserProfile = ({ profileData, onClose, onSave }) => {
   const [form, setForm] = useState({
     id: profileData.id,
     fullName: profileData.fullName,
@@ -57,12 +56,9 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validateForm()) {
-      return;
-    }
 
-    // Mostrar SweetAlert de confirmación
+    e.preventDefault();
+
     const result = await Swal.fire({
       icon: 'question',
       title: '¿Estás seguro?',
@@ -71,6 +67,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
       confirmButtonText: 'Sí, editar',
       confirmButtonColor: '#12c222',
       cancelButtonColor: '#d33',
+
       cancelButtonText: 'Cancelar',
     });
 
@@ -120,7 +117,8 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
     }
   };
 
-  return (
+
+return (
     <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4'>
       <div className='bg-white p-6 rounded-lg w-full max-w-md shadow-lg'>
         <div className='flex justify-between items-center mb-6'>
@@ -135,7 +133,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
         </div>
         <form onSubmit={handleSubmit} className='space-y-6'>
           <div>
-            <label className=' text-sm font-medium text-gray-700 mb-1 flex items-center'>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
               <User size={16} className='mr-2' />
               Nombre
             </label>
@@ -147,7 +145,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className=' text-sm font-medium text-gray-700 mb-1 flex items-center'>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
               <User size={16} className='mr-2' />
               Apellido Paterno
             </label>
@@ -159,7 +157,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className=' text-sm font-medium text-gray-700 mb-1 flex items-center'>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
               <User size={16} className='mr-2' />
               Apellido Materno
             </label>
@@ -171,7 +169,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className=' text-sm font-medium text-gray-700 mb-1 flex items-center'>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
               <Mail size={16} className='mr-2' />
               Correo electrónico
             </label>
@@ -183,7 +181,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
             />
           </div>
           <div>
-            <label className=' text-sm font-medium text-gray-700 mb-1 flex items-center'>
+            <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
               <Phone size={16} className='mr-2' />
               Teléfono
             </label>
@@ -194,6 +192,40 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
               className='mt-1 p-3 w-full border border-gray-300 rounded-md focus:ring focus:ring-green-200 focus:border-green-500'
             />
           </div>
+          {form.role !== 'ADMIN' && (
+            <div>
+              <label className='text-sm font-medium text-gray-700 mb-1 flex items-center'>
+                <Shield size={16} className='mr-2' />
+                Rol
+              </label>
+              <div className='flex items-center space-x-4'>
+                <label className='flex items-center bg-gray-100 p-3 rounded-lg hover:bg-gray-200 transition duration-200'>
+                  <input
+                    type='radio'
+                    name='role'
+                    value='INTERNO'
+                    checked={form.role === 'INTERNO'}
+                    onChange={handleChange}
+                    className='mr-2'
+                  />
+                  <UserCheck size={16} className='mr-2' />
+                  INTERNO
+                </label>
+                <label className='flex items-center bg-gray-100 p-3 rounded-lg hover:bg-gray-200 transition duration-200'>
+                  <input
+                    type='radio'
+                    name='role'
+                    value='EXTERNO'
+                    checked={form.role === 'EXTERNO'}
+                    onChange={handleChange}
+                    className='mr-2'
+                  />
+                  <Users size={16} className='mr-2' />
+                  EXTERNO
+                </label>
+              </div>
+            </div>
+          )}
           <div className='flex justify-end space-x-4 mt-6'>
             <button
               type='button'
@@ -216,6 +248,7 @@ const EditProfileModal = ({ profileData, onClose, onSave }) => {
       </div>
     </div>
   );
+
 };
 
-export default EditProfileModal;
+export default EditUserProfile;

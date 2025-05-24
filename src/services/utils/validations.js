@@ -21,3 +21,8 @@ export const validateLastName = (lastName) => {
   const re = /^[a-zA-Z\s]+$/;
   return re.test(lastName);
 };
+
+export const validateSecondLastName = (seconndLastName) => {
+  const re = /^[a-zA-Z\s]+$/;
+  return re.test(seconndLastName);
+};
