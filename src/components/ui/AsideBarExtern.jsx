@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../../services/utils/authUtils.js';
-
+import Swal from 'sweetalert2';
 import {
   LogOut,
   CircleUserRound,
@@ -28,9 +28,21 @@ const AsideBarExtern = ({ onToggle }) => {
     navigate(path);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Quieres cerrar sesión?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (result.isConfirmed) {
+      logout();
+      navigate('/');
+    }
   };
 
   return (

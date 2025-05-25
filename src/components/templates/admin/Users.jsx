@@ -19,6 +19,7 @@ const Users = ({ user }) => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [editError, setEditError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const [search, setSearch] = useState('');
@@ -43,8 +44,8 @@ const Users = ({ user }) => {
       }
       setLoading(false);
     } catch (error) {
-      console.error('Error en el fetchihng', error);
-      setError('Errro al cargar los usuarios');
+      console.error('Error en el fetching', error);
+      setError('Error al cargar los usuarios');
       setLoading(false);
     }
   };
@@ -67,40 +68,41 @@ const Users = ({ user }) => {
     // Si el usuario confirma, proceder con la actualización
     if (result.isConfirmed) {
       setLoading(true);
-      const loadingToastId = toast.info('Cargando...', { autoClose: false });
+      Swal.fire({
+        title: 'Cargando...',
+        text: 'Por favor, espera',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
 
       try {
         const response = await changeUserStatus(userId, !currentStatus);
 
         if (response) {
-          toast.update(loadingToastId, {
-            render: 'Estado actualizado con éxito',
-            type: 'success',
-            autoClose: 5000,
-          });
+          Swal.close();
           // Mostrar SweetAlert de éxito
           Swal.fire({
             position: 'top-end',
             icon: 'success',
-            title: 'Has sido editado con exito',
+            title: 'Estado actualizado con éxito',
             showConfirmButton: false,
             timer: 1500,
           });
           fetchUsers(); // Actualizar la lista de usuarios
+          setEditError(null);
         }
       } catch (error) {
         console.error('Error al actualizar el estado perfil:', error);
-        toast.update(loadingToastId, {
-          render: 'Error al actualizar el estado del perfil',
-          type: 'error',
-          autoClose: 5000,
-        });
+        Swal.close();
         // Mostrar SweetAlert de error
         Swal.fire({
           icon: 'error',
           title: 'Error',
           text: 'Error al actualizar el estado del perfil',
         });
+        setEditError('Error al actualizar el estado del perfil');
       } finally {
         setLoading(false);
       }
@@ -127,9 +129,6 @@ const Users = ({ user }) => {
       )
     : [];
 
-  if (loading) return <div>Cargando...</div>;
-  if (error) return <div>Error: {error}</div>;
-
   const handleAsideToggle = (expanded) => setIsAsideExpanded(expanded);
 
   return (
@@ -144,138 +143,174 @@ const Users = ({ user }) => {
         } overflow-hidden h-screen relative`}
       >
         <div className='flex-1 flex flex-col overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200'>
+          {/* Loading o Error */}
+          {loading && (
+            <div className='flex justify-center items-center h-full text-lg font-medium text-gray-600'>
+              Cargando...
+            </div>
+          )}
+          {error && !loading && (
+            <div className='flex justify-center items-center h-full text-lg font-medium text-red-600'>
+              Error: {error}
+            </div>
+          )}
           {/* Encabezado */}
-          <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-14'>
-            <div className='flex gap-2 flex-wrap'>
-              <input
-                type='text'
-                placeholder='Buscar...'
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className='border rounded-full px-4 py-2 text-sm w-full sm:w-auto'
-              />
-              <select className='border rounded-md px-2 py-2 text-sm'>
-                <option>Filtrar por</option>
-                <option>Activos</option>
-                <option>Inactivos</option>
-              </select>
-            </div>
-            <button
-              className='bg-gradient-to-r from-brandy-punch-500 to-brandy-punch-600 hover:from-brandy-punch-600 hover:to-brandy-punch-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center'
-              onClick={() => setIsAddUserModalOpen(true)}
-            >
-              + Agregar Usuario
-            </button>
-          </div>
+          {!loading && !error && (
+            <>
+              <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-14'>
+                <div className='flex gap-2 flex-wrap'>
+                  <input
+                    type='text'
+                    placeholder='Buscar...'
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className='border rounded-full px-4 py-2 text-sm w-full sm:w-auto'
+                  />
+                  <select className='border rounded-md px-2 py-2 text-sm'>
+                    <option>Filtrar por</option>
+                    <option>Activos</option>
+                    <option>Inactivos</option>
+                  </select>
+                </div>
+                <button
+                  className='bg-gradient-to-r from-brandy-punch-500 to-brandy-punch-600 hover:from-brandy-punch-600 hover:to-brandy-punch-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center'
+                  onClick={() => setIsAddUserModalOpen(true)}
+                >
+                  + Agregar Usuario
+                </button>
+              </div>
 
-          {/* Tabla */}
-          <div className='overflow-x-auto bg-white shadow-md rounded-lg'>
-            <table className='min-w-full text-sm text-left'>
-              <thead className='bg-gray-100 text-gray-600'>
-                <tr>
-                  <th className='p-3'></th>
-                  <th className='p-3'>Nombre</th>
-                  <th className='p-3'>Apellidos</th>
-                  <th className='p-3'>Correo</th>
-                  <th className='p-3'>Teléfono</th>
-                  <th className='p-3'>Rol</th>
-                  <th className='p-3'>Estado</th>
-                  <th className='p-3'>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {paginatedUsers.map((user) => (
-                  <tr key={user.id} className='border-t hover:bg-gray-50'>
-                    <td className='p-3'></td>
-                    <td className='p-3'>{user.fullName}</td>
-                    <td className='p-3'>{`${user.firstLastName} ${user.secondLastName}`}</td>
-                    <td className='p-3'>{user.email}</td>
-                    <td className='p-3'>{user.phone}</td>
-                    <td className='p-3'>
-                      <div className=''>
-                        <span
-                          className={`px-2 py-1 rounded-full text-white text-xs flex items-center ${
-                            user.role === 'ADMIN'
-                              ? 'bg-brandy-punch-700'
-                              : user.role === 'INTERNO'
-                              ? 'bg-brandy-punch-600'
-                              : 'bg-brandy-punch-300'
-                          }`}
-                        >
-                          {user.role === 'ADMIN' && <Shield className='mr-1' />}
-                          {user.role === 'INTERNO' && (
-                            <CircleUserRound className='mr-1' />
-                          )}
-                          {user.role === 'EXTERNO' && (
-                            <CircleUserRound className='mr-1' />
-                          )}
-                          {user.role}
-                        </span>
-                      </div>
-                    </td>
-                    <td className='p-3'>
-                      <input
-                        type='checkbox'
-                        className='ios8-switch'
-                        checked={user.status}
-                        onChange={() => changeStatus(user.id, user.status)}
-                      />
-                    </td>
+              {/* Tabla */}
+              <div className='overflow-x-auto bg-white shadow-md rounded-lg'>
+                {editError && (
+                  <div style={{ color: 'red' }}>Error: {editError}</div>
+                )}
+                {error && <div style={{ color: 'red' }}>Error: {error}</div>}
+                {paginatedUsers.length > 0 ? (
+                  <table className='min-w-full text-sm text-left'>
+                    <thead className='bg-gray-100 text-gray-600'>
+                      <tr>
+                        <th className='p-3'></th>
+                        <th className='p-3'>Nombre</th>
+                        <th className='p-3'>Apellidos</th>
+                        <th className='p-3'>Correo</th>
+                        <th className='p-3'>Teléfono</th>
+                        <th className='p-3'>Rol</th>
+                        <th className='p-3'>Estado</th>
+                        <th className='p-3'>Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paginatedUsers.map((user) => (
+                        <tr key={user.id} className='border-t hover:bg-gray-50'>
+                          <td className='p-3'></td>
+                          <td className='p-3'>{user.fullName}</td>
+                          <td className='p-3'>{`${user.firstLastName} ${user.secondLastName}`}</td>
+                          <td className='p-3'>{user.email}</td>
+                          <td className='p-3'>{user.phone}</td>
+                          <td className='p-3'>
+                            <div className=''>
+                              <span
+                                className={`px-2 py-1 rounded-full text-white text-xs flex items-center ${
+                                  user.role === 'ADMIN'
+                                    ? 'bg-brandy-punch-700'
+                                    : user.role === 'INTERNO'
+                                    ? 'bg-brandy-punch-600'
+                                    : 'bg-brandy-punch-300'
+                                }`}
+                              >
+                                {user.role === 'ADMIN' && (
+                                  <Shield className='mr-1' />
+                                )}
+                                {user.role === 'INTERNO' && (
+                                  <CircleUserRound className='mr-1' />
+                                )}
+                                {user.role === 'EXTERNO' && (
+                                  <CircleUserRound className='mr-1' />
+                                )}
+                                {user.role}
+                              </span>
+                            </div>
+                          </td>
+                          <td className='p-3'>
+                            <input
+                              type='checkbox'
+                              className='ios8-switch'
+                              checked={user.status}
+                              onChange={() =>
+                                changeStatus(user.id, user.status)
+                              }
+                            />
+                          </td>
 
-                    <td className='p-2'>
-                      <button
-                        className='bg-gradient-to-r from-brandy-punch-500 to-brandy-punch-600 hover:from-brandy-punch-600 hover:to-brandy-punch-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center'
-                        onClick={() => {
-                          setProfileData(user);
-                          setIsEditProfileModalOpen(true);
-                        }}
-                      >
-                        <UserPen className='mr-2' />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                          <td className='p-2'>
+                            <button
+                              className='bg-gradient-to-r from-brandy-punch-500 to-brandy-punch-600 hover:from-brandy-punch-600 hover:to-brandy-punch-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center'
+                              onClick={() => {
+                                setProfileData(user);
+                                setIsEditProfileModalOpen(true);
+                              }}
+                            >
+                              <UserPen className='mr-2' />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  !loading && (
+                    <div style={{ color: 'red' }}>
+                      Error al cargar los usuarios
+                    </div>
+                  )
+                )}
+              </div>
 
-          {/* Paginación */}
-          <div className='flex flex-col sm:flex-row justify-between items-center mt-4 text-sm text-gray-600 gap-2'>
-            <p>
-              {Math.min(
-                (currentPage - 1) * USERS_PER_PAGE + 1,
-                filteredUsers.length
-              )}
-              -{Math.min(currentPage * USERS_PER_PAGE, filteredUsers.length)} de{' '}
-              {filteredUsers.length}
-            </p>
-            <div className='flex items-center gap-2'>
-              <span>Filas por página: {USERS_PER_PAGE}</span>
-              <button
-                className='px-2 py-1 disabled:text-gray-400'
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                disabled={currentPage === 1}
-              >
-                &lt;
-              </button>
-              <span>
-                {currentPage}/{totalPages}
-              </span>
-              <button
-                className='px-2 py-1 disabled:text-gray-400'
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(p + 1, totalPages))
-                }
-                disabled={currentPage === totalPages}
-              >
-                &gt;
-              </button>
-            </div>
-          </div>
+              {/* Paginación */}
+              <div className='flex flex-col sm:flex-row justify-between items-center mt-4 text-sm text-gray-600 gap-2'>
+                <p>
+                  {Math.min(
+                    (currentPage - 1) * USERS_PER_PAGE + 1,
+                    filteredUsers.length
+                  )}
+                  -
+                  {Math.min(currentPage * USERS_PER_PAGE, filteredUsers.length)}{' '}
+                  de {filteredUsers.length}
+                </p>
+                <div className='flex items-center gap-2'>
+                  <span>Filas por página: {USERS_PER_PAGE}</span>
+                  <button
+                    className='px-2 py-1 disabled:text-gray-400'
+                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                    disabled={currentPage === 1}
+                  >
+                    &lt;
+                  </button>
+                  <span>
+                    {currentPage}/{totalPages}
+                  </span>
+                  <button
+                    className='px-2 py-1 disabled:text-gray-400'
+                    onClick={() =>
+                      setCurrentPage((p) => Math.min(p + 1, totalPages))
+                    }
+                    disabled={currentPage === totalPages}
+                  >
+                    &gt;
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </main>
       {isAddUserModalOpen && (
-        <AddUserModal onClose={() => setIsAddUserModalOpen(false)} />
+        <AddUserModal
+          onClose={() => {
+            setIsAddUserModalOpen(false), fetchUsers();
+          }}
+        />
       )}
       {isEditProfileModalOpen && (
         <EditUserProfile

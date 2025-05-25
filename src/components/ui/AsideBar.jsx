@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Swal from 'sweetalert2';
 import {
   LogOut,
   Settings,
@@ -7,10 +8,9 @@ import {
   SquarePen,
   BotMessageSquare,
 } from 'lucide-react';
-import {logout} from '../../services/utils/authUtils.js'
+import { logout } from '../../services/utils/authUtils.js';
 
 const AsideBar = ({ onToggle }) => {
-  
   const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(() => {
     const saved = localStorage.getItem('isExpanded');
@@ -29,11 +29,22 @@ const AsideBar = ({ onToggle }) => {
     navigate(path);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
-  };
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: '¿Quieres cerrar sesión?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Sí, cerrar sesión',
+      cancelButtonText: 'Cancelar',
+    });
 
+    if (result.isConfirmed) {
+      logout();
+      navigate('/');
+    }
+  };
 
   return (
     <>
@@ -52,11 +63,11 @@ const AsideBar = ({ onToggle }) => {
             setIsExpanded(false);
             onToggle?.(false);
           }}
-          
         >
-          <div className='flex flex-col flex-grow justify-between' onClick={() => 
-            setIsExpanded(!isExpanded)}> 
-            
+          <div
+            className='flex flex-col flex-grow justify-between'
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
             <div className='mt-32 flex flex-col items-center space-y-2'>
               <div
                 className={`flex items-center ${
@@ -119,7 +130,6 @@ const AsideBar = ({ onToggle }) => {
         }`}
       >
         <div className='flex items-center space-x-2 p-2 rounded-lg '>
-          
           <SquarePen
             color='#CB842E'
             onClick={() => handleNavigation('/home')}

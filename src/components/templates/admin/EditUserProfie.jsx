@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import Swal from 'sweetalert2';
 import 'react-toastify/dist/ReactToastify.css';
 import { updateUser } from '../../../services/users/userServices';
@@ -10,7 +10,16 @@ import {
   validateLastName,
   validateSecondLastName,
 } from '../../../services/utils/validations.js';
-import { X, User, Mail, Phone, Save, Shield, UserCheck, Users } from 'lucide-react';
+import {
+  X,
+  User,
+  Mail,
+  Phone,
+  Save,
+  Shield,
+  UserCheck,
+  Users,
+} from 'lucide-react';
 const EditUserProfile = ({ profileData, onClose, onSave }) => {
   const [form, setForm] = useState({
     id: profileData.id,
@@ -56,8 +65,12 @@ const EditUserProfile = ({ profileData, onClose, onSave }) => {
   };
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
+
+    // Validar el formulario antes de proceder
+    if (!validateForm()) {
+      return; // Detener la ejecución si la validación falla
+    }
 
     const result = await Swal.fire({
       icon: 'question',
@@ -67,7 +80,6 @@ const EditUserProfile = ({ profileData, onClose, onSave }) => {
       confirmButtonText: 'Sí, editar',
       confirmButtonColor: '#12c222',
       cancelButtonColor: '#d33',
-
       cancelButtonText: 'Cancelar',
     });
 
@@ -92,7 +104,7 @@ const EditUserProfile = ({ profileData, onClose, onSave }) => {
           Swal.fire({
             position: 'top-end',
             icon: 'success',
-            title: 'Has sido editado con exito',
+            title: 'Has sido editado con éxito',
             showConfirmButton: false,
             timer: 1500,
           });
@@ -117,8 +129,7 @@ const EditUserProfile = ({ profileData, onClose, onSave }) => {
     }
   };
 
-
-return (
+  return (
     <div className='fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4'>
       <div className='bg-white p-6 rounded-lg w-full max-w-md shadow-lg'>
         <div className='flex justify-between items-center mb-6'>
@@ -246,9 +257,20 @@ return (
           </div>
         </form>
       </div>
+      <ToastContainer
+        position='bottom-center'
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme='light'
+      />
     </div>
   );
-
 };
 
 export default EditUserProfile;

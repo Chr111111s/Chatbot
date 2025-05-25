@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { toast } from 'react-toastify';
 import Swal from 'sweetalert2';
 import 'react-toastify/dist/ReactToastify.css';
-import { updateUser } from '../../../services/users/userServices';
+import { updateUser } from '../../services/users/userServices.js';
 import {
   validateEmail,
   validatePhone,
   validateFullName,
   validateLastName,
   validateSecondLastName,
-} from '../../../services/utils/validations.js';
+} from '../../services/utils/validations.js';
 import { User, Mail, Phone, X, Save } from 'lucide-react';
 
 const EditProfileModal = ({ profileData, onClose, onSave }) => {

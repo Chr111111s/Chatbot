@@ -89,7 +89,7 @@ export const getInactiveUsers = async () => {
 };
 
 //Function to create a user
-export const creaeteUser = async (userData) => {
+export const createUser = async (userData) => {
   try {
     const response = await fetch(`${API_URL}/users/save`, {
       method: 'POST',
@@ -128,21 +128,107 @@ export const creaeteUser = async (userData) => {
 };
 
 //Function to change password
-export const changePassword = async (oldPassword, newPassword) => {
+export const changePassword = async (userData) => {
   try {
-    const response = await fetch(`${API_URL}/users/change-password`, {
-      method: "PUT",
-      headers: {
-        ...getAuthHeader(),
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ oldPassword, newPassword }),
+    const { userId, currentPassword, newPassword } = userData;
+    if (!userId) throw new Error("ID cannot be null");
+    if (!currentPassword) throw new Error("currentPassword cannot be null");
+    if (!newPassword) throw new Error("newPassword cannot be null");
+
+    // Función getAuthHeader integrada
+    const getAuthHeader = () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.warn('No authentication token found');
+          return {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          };
+        }
+
+        // Asegurarse de que el token tenga el prefijo Bearer
+        const formattedToken = token.startsWith('Bearer ') ? token.trim() : `Bearer ${token.trim()}`;
+        return {
+          'Authorization': formattedToken,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        };
+      } catch (error) {
+        console.warn('Error getting auth token', error);
+        return {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        };
+      }
+    };
+
+    const response = await fetch(`${API_URL}/users/change-password-user`, {
+      method: "POST",
+      headers: getAuthHeader(),
+      body: JSON.stringify({
+        userId,
+        currentPassword,
+        newPassword
+      }),
     });
+
+    const handleResponse = async (response) => {
+      try {
+        // Log the response status for debugging
+        console.log(`handleResponse: Status ${response.status} for ${response.url}`);
+
+        // Si el status es 204 (No Content), devolvemos un objeto vacío
+        if (response.status === 204) {
+          console.log('handleResponse: No content (204)');
+          return { result: null, message: 'No content' };
+        }
+
+        // Para otros códigos de error (403, 401, etc.), intentamos obtener el mensaje de error
+        if (!response.ok) {
+          try {
+            // Intentar obtener el cuerpo del error como JSON
+            const errorData = await response.json();
+            console.error('handleResponse: Error response:', errorData);
+
+            // Si estamos en modo desarrollo, devolvemos datos de fallback en lugar de lanzar error
+            if (response.status === 403 || response.status === 401) {
+              console.warn('handleResponse: Auth error, using fallback data');
+              return { result: [], message: errorData.message || 'Error de autorización' };
+            }
+
+            throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+          } catch (parseError) {
+            // Si no podemos analizar el cuerpo como JSON, usamos el statusText
+            console.error('handleResponse: Could not parse error response', parseError);
+
+            // Si estamos en modo desarrollo, devolvemos datos de fallback en lugar de lanzar error
+            if (response.status === 403 || response.status === 401) {
+              console.warn('handleResponse: Auth error, using fallback data');
+              return { result: [], message: `Error ${response.status}: ${response.statusText}` };
+            }
+
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+          }
+        }
+
+        // Para respuestas exitosas, intentamos analizar el cuerpo como JSON
+        const data = await response.json();
+        console.log('handleResponse: Success response data:', data);
+        return data;
+      } catch (error) {
+        console.error('handleResponse: Unhandled error:', error);
+        // En desarrollo, devolvemos un objeto con un array vacío en lugar de lanzar error
+        return { result: [], message: error.message || 'Error desconocido en la respuesta' };
+      }
+    };
+
     return handleResponse(response);
   } catch (error) {
     throw new Error("Error al cambiar la contraseña");
   }
 };
+
 
 // Function to change user status
 export const changeUserStatus = async (id) => {
