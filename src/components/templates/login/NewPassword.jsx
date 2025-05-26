@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const NewPassword = () => {
+
+  const navigate = useNavigate()
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
@@ -8,6 +12,10 @@ const NewPassword = () => {
     setPassword(e.target.value);
   };
 
+  const handleCancel = () => {
+    navigate('/')    
+  }
+  
   const handleConfirmPasswordChange = (e) => {
     setConfirmPassword(e.target.value);
   };
@@ -76,6 +84,13 @@ const NewPassword = () => {
           </form>
         </div>
       </div>
+      {/* Botón Regresar */}
+      <button
+        className='absolute bottom-4 left-4 bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded md:py-2 md:px-4 md:text-base text-sm hidden sm:block'
+        onClick={handleCancel}
+      >
+        Cancelar
+      </button>
     </div>
   );
 };

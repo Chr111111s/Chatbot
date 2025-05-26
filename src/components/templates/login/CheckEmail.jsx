@@ -1,6 +1,19 @@
-const CheckEmail = () => {
+import { useNavigate } from 'react-router-dom';
+
+const CheckEmail = ({ setFromCheckEmail }) => {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate('/');
+  };
+
+  const handleCode = () => {
+    setFromCheckEmail(true);
+    navigate('/confirmCode');
+  };
+
   return (
-    <div className='min-h-screen bg-white flex flex-col items-center'>
+    <div className='min-h-screen bg-white flex flex-col items-center relative'>
       {/* Encabezado con logos */}
       <div className='w-full flex justify-between items-center px-4 py-4 max-w-6xl'>
         <img src='/uusmb.png' alt='Logo Izquierdo' className='h-20' />
@@ -40,11 +53,22 @@ const CheckEmail = () => {
               />
             </div>
           </div>
-          <button className='w-3/5 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 rounded-xl shadow-md text-base mt-10'>
+          <button
+            className='w-3/5 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 rounded-xl shadow-md text-base mt-10'
+            onClick={handleCode}
+          >
             Continuar
           </button>
         </div>
       </div>
+
+      {/* Botón Regresar */}
+      <button
+        className='absolute bottom-4 left-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded md:py-2 md:px-4 md:text-base text-sm hidden sm:block'
+        onClick={handleBack}
+      >
+        Regresar
+      </button>
     </div>
   );
 };

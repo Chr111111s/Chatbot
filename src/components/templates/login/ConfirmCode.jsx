@@ -1,6 +1,9 @@
 import { useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const ConfirmCode = () => {
+const ConfirmCode = ({setFromConfirmCode}) => {
+  const navigate = useNavigate();
+
   const inputs = Array.from({ length: 6 }, () => useRef(null));
 
   const handleInputChange = (e, index) => {
@@ -18,6 +21,15 @@ const ConfirmCode = () => {
     if (e.key === 'Backspace' && !e.target.value && index > 0) {
       inputs[index - 1].current.focus();
     }
+  };
+
+  const handleBack = () => {
+    navigate(-1);
+  };
+
+  const handleContinue = () => {
+    setFromConfirmCode(true)
+    navigate('/newPassword');
   };
 
   return (
@@ -54,11 +66,19 @@ const ConfirmCode = () => {
             ))}
           </div>
 
-          <button className='w-3/5 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 rounded-xl shadow-md text-base mt-2'>
+          <button className='w-3/5 bg-yellow-400 hover:bg-yellow-500 text-white font-semibold py-3 rounded-xl shadow-md text-base mt-2'
+          onClick={handleContinue}>
             Continuar
           </button>
         </div>
       </div>
+      {/* Botón Regresar */}
+      <button
+        className='absolute bottom-4 left-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded md:py-2 md:px-4 md:text-base text-sm hidden sm:block'
+        onClick={handleBack}
+      >
+        Regresar
+      </button>
     </div>
   );
 };

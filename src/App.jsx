@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   useLocation,
+  Navigate,
 } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 
@@ -24,6 +25,8 @@ import RegisterForm from './components/templates/login/RegisterForm.jsx';
 
 const AnimatedRoutes = ({ user, setUser }) => {
   const location = useLocation();
+  const [fromCheckEmail, setFromCheckEmail] = useState(false);
+  const [fromConfirmCode, setFromConfirmCode] = useState(false);
 
   return (
     <AnimatePresence mode='wait'>
@@ -67,12 +70,44 @@ const AnimatedRoutes = ({ user, setUser }) => {
               exit={{ opacity: 0, x: 100 }}
               transition={{ duration: 0.4 }}
             >
-              <CheckEmail user={user} />
+              <CheckEmail user={user} setFromCheckEmail={setFromCheckEmail} />
             </motion.div>
           }
         />
-        <Route path='/confirmCode' element={<ConfirmCode user={user} />} />
-        <Route path='/newPassword' element={<NewPassword user={user} />} />
+        <Route
+          path='/confirmCode'
+          element={
+            fromCheckEmail ? (
+              <motion.div
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 100 }}
+                transition={{ duration: 0.4 }}
+              >
+                <ConfirmCode user={user} setFromConfirmCode={setFromConfirmCode} />
+              </motion.div>
+            ) : (
+              <Navigate to="/checkEmail" />
+            )
+          }
+        />
+        <Route
+          path='/newPassword'
+          element={
+            fromConfirmCode ? (
+              <motion.div
+                initial={{ opacity: 0, x: 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 100 }}
+                transition={{ duration: 0.4 }}
+              >
+                <NewPassword user={user} />
+              </motion.div>
+            ) : (
+              <Navigate to="/confirmCode" />
+            )
+          }
+        />
 
         {/* ADMIN */}
         <Route
