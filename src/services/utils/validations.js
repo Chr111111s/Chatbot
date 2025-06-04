@@ -12,6 +12,7 @@ export const validatePhone = (phone) => {
   return re.test(phone);
 };
 
+
 export const validateFullName = (fullName) => {
   const re = /^[a-zA-ZáéíóúüñÁÉÍÓÚÜÑ\s]+$/;
   return re.test(fullName);

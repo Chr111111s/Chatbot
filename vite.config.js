@@ -1,13 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vite.dev/config/
 export default defineConfig({
+  base: './', 
   plugins: [react()],
-  assetsInclude: ['**/*.JSX'], // Añade esta línea si es necesario
+  assetsInclude: ['**/*.JSX'],
 
   server: {
-    host: '0.0.0.0', // Escuchar en todas las interfaces de red
-    port: 3000, // Puerto en el que se ejecutará el servidor
+    host: '0.0.0.0',
+    port: 3000,
   },
 });

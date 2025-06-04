@@ -16,12 +16,12 @@ export const getAllUsers = async () => {
 //Function to get a user by id
 export const getUserById = async (id) => {
   try {
-    console.log(`Obteniendo usuario con id: ${id}`);
+    //  console.log(`Obteniendo usuario con id: ${id}`);
     const response = await fetch(`${API_URL}/users/${id}`, {
       headers: getAuthHeader(),
     });
 
-    console.log(`Respuesta: ${response.status}`);
+    //  console.log(`Respuesta: ${response.status}`);
 
     // Manejo de errores para 404 y 403
     if (response.status === 404 || response.status === 403) {
@@ -42,7 +42,7 @@ export const getUserById = async (id) => {
 
     // Asegúrate de que handleResponse pueda manejar la respuesta
     const result = await handleResponse(response);
-    console.log(`Resultado de la respuesta: `, result);
+    // console.log(`Resultado de la respuesta: `, result);
     return result;
   } catch (error) {
     console.error(`Error al obtener el usuario con id: ${id}`, error);
@@ -60,7 +60,6 @@ export const getUserById = async (id) => {
     };
   }
 };
-
 
 //Function to get active users
 export const getActiveUsers = async () => {
@@ -131,9 +130,9 @@ export const createUser = async (userData) => {
 export const changePassword = async (userData) => {
   try {
     const { userId, currentPassword, newPassword } = userData;
-    if (!userId) throw new Error("ID cannot be null");
-    if (!currentPassword) throw new Error("currentPassword cannot be null");
-    if (!newPassword) throw new Error("newPassword cannot be null");
+    if (!userId) throw new Error('ID cannot be null');
+    if (!currentPassword) throw new Error('currentPassword cannot be null');
+    if (!newPassword) throw new Error('newPassword cannot be null');
 
     // Función getAuthHeader integrada
     const getAuthHeader = () => {
@@ -143,44 +142,52 @@ export const changePassword = async (userData) => {
           console.warn('No authentication token found');
           return {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            Accept: 'application/json',
           };
         }
 
         // Asegurarse de que el token tenga el prefijo Bearer
-        const formattedToken = token.startsWith('Bearer ') ? token.trim() : `Bearer ${token.trim()}`;
+        const formattedToken = token.startsWith('Bearer ')
+          ? token.trim()
+          : `Bearer ${token.trim()}`;
         return {
-          'Authorization': formattedToken,
+          Authorization: formattedToken,
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          Accept: 'application/json',
         };
       } catch (error) {
         console.warn('Error getting auth token', error);
         return {
           'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          Accept: 'application/json',
         };
       }
     };
 
     const response = await fetch(`${API_URL}/users/change-password-user`, {
-      method: "POST",
+      method: 'POST',
       headers: getAuthHeader(),
       body: JSON.stringify({
         userId,
         currentPassword,
-        newPassword
+        newPassword,
       }),
     });
 
     const handleResponse = async (response) => {
       try {
-        // Log the response status for debugging
-        console.log(`handleResponse: Status ${response.status} for ${response.url}`);
+        {
+          /**
+          // Log the response status for debugging
+          console.log(
+            `handleResponse: Status ${response.status} for ${response.url}`
+          );
+          */
+        }
 
         // Si el status es 204 (No Content), devolvemos un objeto vacío
         if (response.status === 204) {
-          console.log('handleResponse: No content (204)');
+         // console.log('handleResponse: No content (204)');
           return { result: null, message: 'No content' };
         }
 
@@ -194,18 +201,30 @@ export const changePassword = async (userData) => {
             // Si estamos en modo desarrollo, devolvemos datos de fallback en lugar de lanzar error
             if (response.status === 403 || response.status === 401) {
               console.warn('handleResponse: Auth error, using fallback data');
-              return { result: [], message: errorData.message || 'Error de autorización' };
+              return {
+                result: [],
+                message: errorData.message || 'Error de autorización',
+              };
             }
 
-            throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
+            throw new Error(
+              errorData.message ||
+                `Error ${response.status}: ${response.statusText}`
+            );
           } catch (parseError) {
             // Si no podemos analizar el cuerpo como JSON, usamos el statusText
-            console.error('handleResponse: Could not parse error response', parseError);
+            console.error(
+              'handleResponse: Could not parse error response',
+              parseError
+            );
 
             // Si estamos en modo desarrollo, devolvemos datos de fallback en lugar de lanzar error
             if (response.status === 403 || response.status === 401) {
               console.warn('handleResponse: Auth error, using fallback data');
-              return { result: [], message: `Error ${response.status}: ${response.statusText}` };
+              return {
+                result: [],
+                message: `Error ${response.status}: ${response.statusText}`,
+              };
             }
 
             throw new Error(`Error ${response.status}: ${response.statusText}`);
@@ -219,58 +238,61 @@ export const changePassword = async (userData) => {
       } catch (error) {
         console.error('handleResponse: Unhandled error:', error);
         // En desarrollo, devolvemos un objeto con un array vacío en lugar de lanzar error
-        return { result: [], message: error.message || 'Error desconocido en la respuesta' };
+        return {
+          result: [],
+          message: error.message || 'Error desconocido en la respuesta',
+        };
       }
     };
 
     return handleResponse(response);
   } catch (error) {
-    throw new Error("Error al cambiar la contraseña");
+    throw new Error('Error al cambiar la contraseña');
   }
 };
-
 
 // Function to change user status
 export const changeUserStatus = async (id) => {
   try {
     const response = await fetch(`${API_URL}/users/change-status/${id}`, {
-      method: "PUT",
+      method: 'PUT',
       headers: getAuthHeader(),
     });
     return handleResponse(response);
   } catch (error) {
-    throw new Error("Error al cambiar el estado del usuario");
+    throw new Error('Error al cambiar el estado del usuario');
   }
 };
 
 ///Funcction to change user role
 export const changeUserRole = async (id) => {
-try {
+  try {
     const response = await fetch(`${API_URL}/users/change-rol/${id}`, {
-      method: "PUT",
+      method: 'PUT',
       headers: getAuthHeader(),
     });
     return handleResponse(response);
   } catch (error) {
-    throw new Error("Error al cambiar el rol del usuario");
+    throw new Error('Error al cambiar el rol del usuario');
   }
-}
+};
 
 // Function to update a user
 export const updateUser = async (userData) => {
   try {
-    const { id, fullName, firstLastName, secondLastName, phone, email, role } = userData;
+    const { id, fullName, firstLastName, secondLastName, phone, email, role } =
+      userData;
 
-    if (!id) throw new Error("ID cannot be null");
-    if (!fullName) throw new Error("Full name cannot be empty");
-    if (!firstLastName) throw new Error("FirstLastName cannot be empty");
-    if (!secondLastName) throw new Error("SecondLastName cannot be empty");
-    if (!phone) throw new Error("Phone cannot be empty");
-    if (!email) throw new Error("Email cannot be empty");
-    if (!role) throw new Error("Role cannot be empty");
+    if (!id) throw new Error('ID cannot be null');
+    if (!fullName) throw new Error('Full name cannot be empty');
+    if (!firstLastName) throw new Error('FirstLastName cannot be empty');
+    if (!secondLastName) throw new Error('SecondLastName cannot be empty');
+    if (!phone) throw new Error('Phone cannot be empty');
+    if (!email) throw new Error('Email cannot be empty');
+    if (!role) throw new Error('Role cannot be empty');
 
     const response = await fetch(`${API_URL}/users/update`, {
-      method: "POST",
+      method: 'POST',
       headers: getAuthHeader(),
       body: JSON.stringify({
         id,
@@ -279,13 +301,13 @@ export const updateUser = async (userData) => {
         secondLastName,
         phone,
         email,
-        role
+        role,
       }),
     });
 
     return handleResponse(response);
   } catch (error) {
-    console.error("Error in updateUser:", error);
+    console.error('Error in updateUser:', error);
     throw error;
   }
 };

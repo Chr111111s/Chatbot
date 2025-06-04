@@ -166,11 +166,7 @@ const Users = ({ user }) => {
                     onChange={(e) => setSearch(e.target.value)}
                     className='border rounded-full px-4 py-2 text-sm w-full sm:w-auto'
                   />
-                  <select className='border rounded-md px-2 py-2 text-sm'>
-                    <option>Filtrar por</option>
-                    <option>Activos</option>
-                    <option>Inactivos</option>
-                  </select>
+                  
                 </div>
                 <button
                   className='bg-gradient-to-r from-brandy-punch-500 to-brandy-punch-600 hover:from-brandy-punch-600 hover:to-brandy-punch-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center'

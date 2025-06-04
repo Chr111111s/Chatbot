@@ -190,7 +190,7 @@ const Profile = () => {
             profileData={profileData}
             onClose={() => setIsPasswordModalOpen(false)}
             onSave={(formData) => {
-              console.log('Nueva contraseña:', formData);
+             // console.log('Nueva contraseña:', formData);
               setIsPasswordModalOpen(false);
             }}
           />

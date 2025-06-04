@@ -1,4 +1,3 @@
-// Import API_URL from constants to maintain consistency
 import { API_URL } from '../../../constants.js';
 
 /**
@@ -226,11 +225,18 @@ export const decodeAndDisplayToken = () => {
  * @returns {Object} - Decoded token payload
  */
 const decodeToken = (token) => {
-    const base64Url = token.split('.')[1];
+  try {
+    const tokenWithoutBearer = token.startsWith('Bearer ')
+      ? token.slice(7)
+      : token;
+    const base64Url = tokenWithoutBearer.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-    }).join(''));
 
+    const jsonPayload = atob(base64);
     return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
 };
+
